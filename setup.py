@@ -15,8 +15,49 @@
 # limitations under the License.
 """Setup script for the apptrace package."""
 
-import os
+from distutils.cmd import Command
+from distutils.core import setup
 from setuptools import setup, find_packages
+from unittest import TestLoader, TextTestRunner
+
+import apptrace.tests
+import os
+import sys
+
+
+class test(Command):
+    """Runs the unit tests for apptrace."""
+
+    description = "Runs unit tests for apptrace."
+
+    user_options = [
+        ('appengine-lib=', None, 'path to the Google App Engine distribution')
+    ]
+
+    def initialize_options(self):
+        self.appengine_lib = None
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        appengine_path = self.appengine_lib
+        extra_paths = [
+            appengine_path,
+            os.path.join(appengine_path, 'lib', 'antlr3'),
+            os.path.join(appengine_path, 'lib', 'django'),
+            os.path.join(appengine_path, 'lib', 'fancy_urllib'),
+            os.path.join(appengine_path, 'lib', 'ipaddr'),
+            os.path.join(appengine_path, 'lib', 'webob'),
+            os.path.join(appengine_path, 'lib', 'yaml', 'lib'),
+        ]
+        sys.path.extend(extra_paths)
+        loader = TestLoader()
+        t = TextTestRunner()
+        t.run(loader.loadTestsFromModule(apptrace.tests))
+
+# 'test' is the parameter as it gets added to setup.py
+cmdclasses = {'test': test}
 
 
 def read(*rnames):
@@ -62,4 +103,5 @@ setup(
         ],
     },
     zip_safe=False,
+    cmdclass=cmdclasses
 )
