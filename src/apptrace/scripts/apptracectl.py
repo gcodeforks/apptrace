@@ -88,7 +88,7 @@ def initApptracePackage(app_root, dependencies):
     copytree(os.path.dirname(__file__)[:-16],
              app_root,
              symlinks=True,
-             exclude=['scripts'],
+             exclude=['scripts', 'tests'],
              ignore=True)
     for dep in dependencies:
         src = os.path.dirname(dep.__file__)
