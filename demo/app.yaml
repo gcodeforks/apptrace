@@ -1,0 +1,12 @@
+application: guestbook
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /_ah/apptrace.*
+  script: apptrace/overview.py
+
+- url: .*
+  script: guestbook.py
+
