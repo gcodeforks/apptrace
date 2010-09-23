@@ -20,7 +20,6 @@ from distutils.core import setup
 from setuptools import setup, find_packages
 from unittest import TestLoader, TextTestRunner
 
-import apptrace.tests
 import os
 import sys
 
@@ -41,7 +40,7 @@ class test(Command):
         pass
 
     def run(self):
-        appengine_path = self.appengine_lib
+        appengine_path = self.appengine_lib or '/'
         extra_paths = [
             appengine_path,
             os.path.join(appengine_path, 'lib', 'antlr3'),
@@ -52,6 +51,9 @@ class test(Command):
             os.path.join(appengine_path, 'lib', 'yaml', 'lib'),
         ]
         sys.path.extend(extra_paths)
+
+        import apptrace.tests
+
         loader = TestLoader()
         t = TextTestRunner()
         t.run(loader.loadTestsFromModule(apptrace.tests))
