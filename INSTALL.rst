@@ -20,3 +20,10 @@ In order to run the demo application with apptrace run following commands::
 
   $ ./bin/apptracectl init demo 
   $ python dev_appserver.py demo
+
+Running Unit Tests
+------------------
+
+All unit tests can be run by executing the following command::
+
+  $ ./bin/python setup.py test --appengine-lib=<path to the SDK>
