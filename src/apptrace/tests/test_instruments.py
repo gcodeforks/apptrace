@@ -13,23 +13,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Unit tests for the apptrace WSGI middleware."""
+"""Unit tests for the apptrace instruments."""
 
 import unittest
 
 
-class TestMiddleware(unittest.TestCase):
-    """Test case for WSGI middleware."""
+class TestIntruments(unittest.TestCase):
+    """Test case for apptrace instruments."""
 
-    def test_import(self):
-        """Importing the middleware."""
+    def test_Recorder(self):
+        """Testing the recorder."""
 
-        import apptrace.middleware
-        self.assertEqual('module', type(apptrace.middleware).__name__)
-
-    def test_config(self):
-        """Testing configuration."""
-
-        from apptrace.middleware import config
-        self.assertTrue(hasattr(config, 'URL_PATTERNS'))
-        self.assertTrue(hasattr(config, 'TRACE_MODULES'))
+        from apptrace import instruments
+        recorder = instruments.Recorder(None, ['apptrace.instruments'])
+        recorder.trace()
