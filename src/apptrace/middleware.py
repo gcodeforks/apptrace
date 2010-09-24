@@ -35,8 +35,14 @@ class Config(object):
         apptrace_TRACE_MODULES = ['main.py']
     """
     
-    URL_PATTERNS = []
+    URL_PATTERNS  = []
     TRACE_MODULES = []
+
+    INDEX_KEY     = 'apptrace_index'
+    RECORD_PREFIX = 'apptrace_record'
+
+    IGNORE_NAMES  = ['__builtins__', '__doc__', '__file__', '__loader__',
+                     '__name__']
 
     def get_modules():
         """Returns plain module names without the file extension."""
@@ -83,7 +89,7 @@ def apptrace_middleware(application):
 
     compiled_url_patterns = [re.compile(p) for p in config.URL_PATTERNS]
 
-    recorder = Recorder(application, config.get_modules())
+    recorder = Recorder(config)
 
     def wsgi_app(environ, start_response):
         app = application(environ, start_response)

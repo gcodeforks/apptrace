@@ -21,9 +21,34 @@ import unittest
 class TestIntruments(unittest.TestCase):
     """Test case for apptrace instruments."""
 
+    def setUp(self):
+        """Setup test requirements."""
+
+        from google.appengine.api import apiproxy_stub_map
+        from google.appengine.api.memcache import memcache_stub
+
+        apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
+
+        apiproxy_stub_map.apiproxy.RegisterStub(
+            'memcache',
+            memcache_stub.MemcacheServiceStub())
+
     def test_Recorder(self):
         """Testing the recorder."""
 
         from apptrace import instruments
-        recorder = instruments.Recorder(None, ['apptrace.instruments'])
+
+        class Config(object):
+            INDEX_KEY     = 'apptrace_test_index'
+            RECORD_PREFIX = 'apptrace_test_record'
+            IGNORE_NAMES  = []
+            @staticmethod
+            def get_modules():
+                return ['apptrace.instruments']
+
+        recorder = instruments.Recorder(Config)
         recorder.trace()
+        recorder.trace()
+
+        # Retrieve records
+        self.assertEqual(2, len(recorder.records))

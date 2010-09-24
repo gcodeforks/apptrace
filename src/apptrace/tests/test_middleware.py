@@ -33,3 +33,5 @@ class TestMiddleware(unittest.TestCase):
         from apptrace.middleware import config
         self.assertTrue(hasattr(config, 'URL_PATTERNS'))
         self.assertTrue(hasattr(config, 'TRACE_MODULES'))
+        self.assertTrue(hasattr(config, 'INDEX_KEY'))
+        self.assertTrue(hasattr(config, 'RECORD_PREFIX'))

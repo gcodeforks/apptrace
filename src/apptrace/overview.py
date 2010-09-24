@@ -15,6 +15,8 @@
 # limitations under the License.
 """User interface for interactive retrieval of apptrace records."""
 
+from apptrace.middleware import config
+from apptrace.instruments import Recorder
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
@@ -53,7 +55,9 @@ class OverviewHandler(webapp.RequestHandler):
     """Serves the overview page."""
 
     def get(self):
-        self.response.out.write(template.render('index.html', {}))
+        records = Recorder(config).records
+        template_vars = {'records': records}
+        self.response.out.write(template.render('index.html', template_vars))
 
 
 def main():

@@ -10,5 +10,10 @@
   </head>
   <body>
     <h1>Apptrace</h1>
+    <ul>
+    {% for record in records %}
+      <li>{{ record }}</li>
+    {% endfor %}
+    </ul> 
   </body>
 </html>
