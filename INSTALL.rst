@@ -26,4 +26,4 @@ Running Unit Tests
 
 All unit tests can be run by executing the following command::
 
-  $ ./bin/python setup.py test --appengine-lib=<path to the SDK>
+  $ ./bin/python setup.py test --appengine-path=<path to the SDK>

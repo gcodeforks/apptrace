@@ -30,17 +30,17 @@ class test(Command):
     description = "Runs unit tests for apptrace."
 
     user_options = [
-        ('appengine-lib=', None, 'path to the Google App Engine distribution')
+        ('appengine-path=', None, 'path to the Google App Engine distribution')
     ]
 
     def initialize_options(self):
-        self.appengine_lib = None
+        self.appengine_path = None
 
     def finalize_options(self):
         pass
 
     def run(self):
-        appengine_path = self.appengine_lib or '/'
+        appengine_path = self.appengine_path or '/'
         extra_paths = [
             appengine_path,
             os.path.join(appengine_path, 'lib', 'antlr3'),
