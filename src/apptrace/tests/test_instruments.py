@@ -51,4 +51,4 @@ class TestIntruments(unittest.TestCase):
         recorder.trace()
 
         # Retrieve records
-        self.assertEqual(2, len(recorder.records))
+        self.assertEqual(2, len(recorder.get_records()))

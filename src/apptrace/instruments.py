@@ -42,7 +42,10 @@ class Recorder(object):
         return self._config
 
     def trace(self):
-        """Records momory data."""
+        """Records momory data.
+
+        Uses Heapy to retrieve information about allocated memory.
+        """
 
         gc.collect()
         hp = hpy()
@@ -64,24 +67,31 @@ class Recorder(object):
                 data.append((key, obj.__class__.__name__, iso.domisize)) 
             results.append((name, data))
 
-        if memcache.add(key=self.config.INDEX_KEY, value=1):
-            index = 1
-        else:
+        # We use memcache to store records and take a straightforward
+        # approach with a very simple index which is basically a counter.
+        index = 1
+        if not memcache.add(key=self.config.INDEX_KEY, value=index):
             index = memcache.incr(key=self.config.INDEX_KEY)
         key = self.config.RECORD_PREFIX + str(index)
         memcache.add(key=key, value=simplejson.dumps(results))
 
-    @property
-    def records(self):
-        """Returns all stored records."""
+    def get_records(self, limit=100, offset=0):
+        """Returns stored records beginning with the latest.
+
+        Args:
+            limit: Max number of records.
+            offset: Offset within overall results.
+        """
 
         curr_index = memcache.get(self.config.INDEX_KEY)
         if not curr_index:
             return []
 
-        keys = ['%i' % (i+1) for i in range(curr_index)]
+        if curr_index < limit: limit = curr_index 
+
+        keys = ['%i' % (curr_index-i) for i in xrange(offset, limit)]
+
         records = memcache.get_multi(keys=keys,
                                      key_prefix=self.config.RECORD_PREFIX)
 
-        sorted_keys = reversed(sorted(records.keys()))
-        return [simplejson.loads(records[k]) for k in sorted_keys]
+        return [simplejson.loads(records[key]) for key in keys]
