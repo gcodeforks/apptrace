@@ -43,6 +43,7 @@ class Config(object):
 
     IGNORE_NAMES  = ['__builtins__', '__doc__', '__file__', '__loader__',
                      '__name__']
+    IGNORE_TYPES  = ['module']
 
     def get_modules():
         """Returns plain module names without the file extension."""

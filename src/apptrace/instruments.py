@@ -24,6 +24,7 @@ from google.appengine.api import memcache
 from guppy import hpy
 
 import gc
+import inspect
 
 
 class JSONSerializable(object):
@@ -73,7 +74,13 @@ class JSONSerializable(object):
 class RecordEntry(JSONSerializable):
     """Represents a single record entry."""
 
-    def __init__(self, module_name, name, obj_type, dominated_size):
+    def __init__(self,
+                 module_name,
+                 name,
+                 obj_type,
+                 dominated_size,
+                 file_path,
+                 lineno):
         """Constructor.
 
         Args:
@@ -81,11 +88,20 @@ class RecordEntry(JSONSerializable):
             name: The object name (key in module.__dict__).
             obj_type: String representing the type of the recorded object.
             dominated_size: Total size of memory that will become deallocated.
+            file_path: The absolute path to the source file.
+            lineno: Line number from where the corresponding code starts.
         """
         self.module_name = module_name
         self.name = name
         self.obj_type = obj_type
         self.dominated_size = dominated_size
+        self.file_path = file_path
+        self.lineno = lineno
+
+    def __cmp__(self, other):
+        if self.obj_type != other.obj_type:
+            raise TypeError("Cannot compare entries for different types")
+        return cmp(self.dominated_size, other.dominated_size)
 
 
 class Record(JSONSerializable):
@@ -154,16 +170,36 @@ class Recorder(object):
         for name in self.config.get_modules():
             if name not in sys.modules:
                 continue
-            module_dict = sys.modules[name].__dict__
+            module = sys.modules[name]
+            module_dict = module.__dict__
             obj_keys = sorted(set(module_dict.keys())-
                               set(self.config.IGNORE_NAMES))
             for key in obj_keys:
                 obj = module_dict[key]
+                obj_type = obj.__class__.__name__
+
+                if obj_type in self.config.IGNORE_TYPES:
+                    continue
+
                 iso = hp.iso(obj)
+
+                try:
+                    _, lineno = inspect.getsourcelines(obj)
+                    file_path = inspect.getsourcefile(obj)
+                except TypeError:
+                    lines, lineno = inspect.getsourcelines(module)
+                    for line in lines:
+                        lineno += 1
+                        if line.startswith(key):
+                            break
+                    file_path = inspect.getsourcefile(module)
+
                 entry = RecordEntry(name,
                                     key,
                                     obj.__class__.__name__,
-                                    iso.domisize)
+                                    iso.domisize,
+                                    file_path,
+                                    lineno)
 
                 record.entries.append(entry)
 
