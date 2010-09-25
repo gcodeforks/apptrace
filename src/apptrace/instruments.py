@@ -203,7 +203,7 @@ class Recorder(object):
             limit: Max number of records.
             offset: Offset within overall results.
 
-        Returns lists of RecordEntry instances.
+        Returns lists of Record instances.
         """
         records = self.get_raw_records(limit, offset)
         return [Record.FromJSON(record) for record in records]
