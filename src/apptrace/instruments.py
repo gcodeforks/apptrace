@@ -26,6 +26,105 @@ from guppy import hpy
 import gc
 
 
+class JSONSerializable(object):
+    """Base class for JSON serializable objects."""
+
+    def __setattr__(self, attr, value):
+        self.__dict__['_k_'+attr] = value
+
+    def __getattr__(self, attr):
+        return self.__dict__['_k_'+attr]
+
+    def __repr__(self):
+        data = dict([(k[3:], self.get_value(self.__dict__[k]))
+                     for k in self.__dict__ if k.startswith('_k_')])
+        return unicode(data)
+
+    @classmethod
+    def get_value(C, value):
+        return value
+
+    @classmethod
+    def make_value(C, value):
+        return value
+
+    def EncodeJSON(self):
+        """Encodes record to JSON."""
+
+        return simplejson.dumps(eval(repr(self)))
+
+    @staticmethod
+    def make_args(args):
+        return dict([(str(k), args[k]) for k in args])
+
+    @classmethod
+    def FromJSON(C, json):
+        """Deserializes JSON and returns a new instance of the given class.
+
+        Args:
+            C: This class.
+            json: String containing JSON.
+        """
+
+        data = simplejson.loads(json)
+        return C(**dict([(str(k), C.make_value(data[k])) for k in data]))
+
+
+class RecordEntry(JSONSerializable):
+    """Represents a single record entry."""
+
+    def __init__(self, module_name, name, obj_type, dominated_size):
+        """Constructor.
+
+        Args:
+            module_name: Name of the module.
+            name: The object name (key in module.__dict__).
+            obj_type: String representing the type of the recorded object.
+            dominated_size: Total size of memory that will become deallocated.
+        """
+        self.module_name = module_name
+        self.name = name
+        self.obj_type = obj_type
+        self.dominated_size = dominated_size
+
+
+class Record(JSONSerializable):
+    """Represents a record.
+
+    Records contain record entries.
+    """
+
+    def __init__(self, entries):
+        """Constructor.
+
+        Args:
+            entries: List of RecordEntry instances.
+        """
+        self.entries = entries
+
+    @classmethod
+    def get_value(C, value):
+        if isinstance(value, list):
+            new = []
+            for item in value:
+                if isinstance(item, RecordEntry):
+                    new.append(eval(repr(item)))
+                else:
+                    new.append(item)
+            value = new
+        return value
+
+    @classmethod
+    def make_value(C, value):
+        value = value
+        if isinstance(value, list):
+            new = []
+            for item in value:
+                new.append(RecordEntry(**super(Record, C).make_args(item)))
+            value = new
+        return value
+
+
 class Recorder(object):
     """Traces the memory usage of various appllication modules."""
 
@@ -50,22 +149,23 @@ class Recorder(object):
         gc.collect()
         hp = hpy()
 
-        results = []
+        record = Record([])
 
         for name in self.config.get_modules():
             if name not in sys.modules:
                 continue
             module_dict = sys.modules[name].__dict__
-            data = []
             obj_keys = sorted(set(module_dict.keys())-
                               set(self.config.IGNORE_NAMES))
             for key in obj_keys:
                 obj = module_dict[key]
                 iso = hp.iso(obj)
-                # The dominated size of an object is the total size of memory
-                # that will become deallocated.
-                data.append((key, obj.__class__.__name__, iso.domisize)) 
-            results.append((name, data))
+                entry = RecordEntry(name,
+                                    key,
+                                    obj.__class__.__name__,
+                                    iso.domisize)
+
+                record.entries.append(entry)
 
         # We use memcache to store records and take a straightforward
         # approach with a very simple index which is basically a counter.
@@ -73,10 +173,10 @@ class Recorder(object):
         if not memcache.add(key=self.config.INDEX_KEY, value=index):
             index = memcache.incr(key=self.config.INDEX_KEY)
         key = self.config.RECORD_PREFIX + str(index)
-        memcache.add(key=key, value=simplejson.dumps(results))
+        memcache.add(key=key, value=record.EncodeJSON())
 
-    def get_records(self, limit=100, offset=0):
-        """Returns stored records beginning with the latest.
+    def get_raw_records(self, limit=100, offset=0):
+        """Returns raw records beginning with the latest.
 
         Args:
             limit: Max number of records.
@@ -94,4 +194,16 @@ class Recorder(object):
         records = memcache.get_multi(keys=keys,
                                      key_prefix=self.config.RECORD_PREFIX)
 
-        return [simplejson.loads(records[key]) for key in keys]
+        return [records[key] for key in keys]
+
+    def get_records(self, limit=100, offset=0):
+        """Get stored records.
+
+        Args:
+            limit: Max number of records.
+            offset: Offset within overall results.
+
+        Returns lists of RecordEntry instances.
+        """
+        records = self.get_raw_records(limit, offset)
+        return [Record.FromJSON(record) for record in records]

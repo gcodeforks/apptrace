@@ -33,6 +33,51 @@ class TestIntruments(unittest.TestCase):
             'memcache',
             memcache_stub.MemcacheServiceStub())
 
+    def test_RecordEntry(self):
+        """Generating record entries."""
+
+        from apptrace import instruments
+        from django.utils import simplejson
+
+        entry = instruments.RecordEntry('foo', 'bar', 'int', 32)
+        self.assertEqual(
+            {u'module_name': u'foo', u'obj_type': u'int',
+             u'dominated_size': 32, u'name': u'bar'},
+            simplejson.loads(entry.EncodeJSON()))
+
+        new_entry = instruments.RecordEntry.FromJSON(
+            '{"module_name": "test", "name": "l", "obj_type": "list",'
+            '"dominated_size": 3112}')
+
+        self.assertEqual(3112, new_entry.dominated_size)
+
+        new_entry.module_name = 'foomodule'
+
+        self.assertEqual(
+            {u'module_name': u'foomodule', u'obj_type': u'list',
+             u'dominated_size': 3112, u'name': u'l'},
+            simplejson.loads(new_entry.EncodeJSON()))
+
+    def test_Record(self):
+        """Generating records."""
+
+        from apptrace import instruments
+        from django.utils import simplejson
+
+        json = ('{"module_name": "test", "name": "l", "obj_type": "list",'
+                '"dominated_size": 3112}')
+        record = instruments.Record([instruments.RecordEntry.FromJSON(json)])
+        self.assertEqual(
+            {u'entries': [{u'module_name': u'test', u'obj_type': u'list',
+                           u'dominated_size': 3112, u'name': u'l'}]},
+            simplejson.loads(record.EncodeJSON()))
+
+        json = ('{"entries": [{"module_name": "test", "obj_type": "list", '
+                              '"dominated_size": 3112, "name": "l"}]}')
+        new_record = instruments.Record.FromJSON(json)
+        self.assertTrue(
+            isinstance(new_record.entries[0], instruments.RecordEntry))
+
     def test_Recorder(self):
         """Testing the recorder."""
 
@@ -51,4 +96,5 @@ class TestIntruments(unittest.TestCase):
         recorder.trace()
 
         # Retrieve records
+        self.assertEqual(2, len(recorder.get_raw_records()))
         self.assertEqual(2, len(recorder.get_records()))

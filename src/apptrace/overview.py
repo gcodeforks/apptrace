@@ -55,7 +55,7 @@ class OverviewHandler(webapp.RequestHandler):
     """Serves the overview page."""
 
     def get(self):
-        records = Recorder(config).get_records()
+        records = Recorder(config).get_raw_records()
         template_vars = {'records': records}
         self.response.out.write(template.render('index.html', template_vars))
 
