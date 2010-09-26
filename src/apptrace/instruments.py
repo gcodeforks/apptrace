@@ -88,7 +88,7 @@ class RecordEntry(JSONSerializable):
             name: The object name (key in module.__dict__).
             obj_type: String representing the type of the recorded object.
             dominated_size: Total size of memory that will become deallocated.
-            filename: The absolute path to the source file.
+            filename: File path relative to the application root directory.
             lineno: Line number from where the corresponding code starts.
         """
         self.module_name = module_name
