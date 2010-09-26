@@ -27,6 +27,21 @@ import gc
 import inspect
 
 
+def lsubstr(a, b):
+    """Calculates the common substring by comparing two given strings.
+
+    Returns a generator object.
+    """
+    i = 0
+    while 1:
+        try:
+            if a[i] == b[i]: yield a[i]
+            else: break
+            i += 1
+        except IndexError:
+            break
+
+
 class JSONSerializable(object):
     """Base class for JSON serializable objects."""
 
@@ -165,16 +180,6 @@ class Recorder(object):
         gc.collect()
         hp = hpy()
 
-        def spath(a, b):
-            i = 0
-            while 1:
-                try:
-                    if a[i] == b[i]: yield a[i]
-                    else: break
-                    i += 1
-                except IndexError:
-                    break
-
         record = Record([])
 
         for name in self.config.get_modules():
@@ -203,7 +208,7 @@ class Recorder(object):
                             break
                     fn = inspect.getsourcefile(module)
 
-                filename = fn[len(list(spath(fn, os.getcwd())))+1:]
+                filename = fn[len(list(lsubstr(fn, os.getcwd())))+1:]
 
                 entry = RecordEntry(name,
                                     key,
