@@ -42,12 +42,12 @@ class TestIntruments(unittest.TestCase):
         entry = instruments.RecordEntry('foo', 'bar', 'int', 32, 'foo.py', 22)
         self.assertEqual(
             {u'obj_type': u'int', u'name': u'bar', u'dominated_size': 32,
-             u'lineno': 22, u'module_name': u'foo', u'file_path': u'foo.py'},
+             u'lineno': 22, u'module_name': u'foo', u'filename': u'foo.py'},
             simplejson.loads(entry.EncodeJSON()))
 
         new_entry = instruments.RecordEntry.FromJSON(
             '{"module_name": "test", "name": "l", "obj_type": "list",'
-            '"dominated_size": 3112, "file_path": "test.py", "lineno": 42}')
+            '"dominated_size": 3112, "filename": "test.py", "lineno": 42}')
 
         self.assertEqual(3112, new_entry.dominated_size)
 
@@ -55,7 +55,7 @@ class TestIntruments(unittest.TestCase):
 
         self.assertEqual(
             {u'obj_type': u'list', u'name': u'l', u'dominated_size': 3112,
-             u'lineno': 42, u'module_name': u'bar', u'file_path': u'test.py'},
+             u'lineno': 42, u'module_name': u'bar', u'filename': u'test.py'},
             simplejson.loads(new_entry.EncodeJSON()))
 
     def test_Record(self):
@@ -65,17 +65,17 @@ class TestIntruments(unittest.TestCase):
         from django.utils import simplejson
 
         json = ('{"module_name": "test", "name": "l", "obj_type": "list",'
-                '"dominated_size": 3112, "file_path": "test.py", "lineno": 42}')
+                '"dominated_size": 3112, "filename": "test.py", "lineno": 42}')
         record = instruments.Record([instruments.RecordEntry.FromJSON(json)])
         self.assertEqual(
             {u'entries': [{u'obj_type': u'list', u'name': u'l',
                            u'dominated_size': 3112, u'lineno': 42,
-                           u'module_name': u'test', u'file_path': u'test.py'}]},
+                           u'module_name': u'test', u'filename': u'test.py'}]},
             simplejson.loads(record.EncodeJSON()))
 
         json = ('{"entries": [{"module_name": "test", "obj_type": "list", '
                               '"dominated_size": 3112, "name": "l", '
-                              '"file_path": "test.py", "lineno": 42}]}')
+                              '"filename": "test.py", "lineno": 42}]}')
         new_record = instruments.Record.FromJSON(json)
         self.assertTrue(
             isinstance(new_record.entries[0], instruments.RecordEntry))
@@ -86,13 +86,13 @@ class TestIntruments(unittest.TestCase):
         from apptrace import instruments
 
         a = ('{"module_name": "test", "name": "l", "obj_type": "list",'
-             '"dominated_size": 3112, "file_path": "test.py", "lineno": 42}')
+             '"dominated_size": 3112, "filename": "test.py", "lineno": 42}')
 
         b = ('{"module_name": "test", "name": "l", "obj_type": "list",'
-             '"dominated_size": 6888, "file_path": "test.py", "lineno": 42}')
+             '"dominated_size": 6888, "filename": "test.py", "lineno": 42}')
 
         c = ('{"module_name": "test", "name": "i", "obj_type": "int",'
-             '"dominated_size": 32, "file_path": "test.py", "lineno": 12}')
+             '"dominated_size": 32, "filename": "test.py", "lineno": 12}')
 
         entry_a = instruments.RecordEntry.FromJSON(a)
         entry_b = instruments.RecordEntry.FromJSON(b)

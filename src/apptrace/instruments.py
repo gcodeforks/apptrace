@@ -79,7 +79,7 @@ class RecordEntry(JSONSerializable):
                  name,
                  obj_type,
                  dominated_size,
-                 file_path,
+                 filename,
                  lineno):
         """Constructor.
 
@@ -88,14 +88,14 @@ class RecordEntry(JSONSerializable):
             name: The object name (key in module.__dict__).
             obj_type: String representing the type of the recorded object.
             dominated_size: Total size of memory that will become deallocated.
-            file_path: The absolute path to the source file.
+            filename: The absolute path to the source file.
             lineno: Line number from where the corresponding code starts.
         """
         self.module_name = module_name
         self.name = name
         self.obj_type = obj_type
         self.dominated_size = dominated_size
-        self.file_path = file_path
+        self.filename = filename
         self.lineno = lineno
 
     def __cmp__(self, other):
@@ -165,6 +165,14 @@ class Recorder(object):
         gc.collect()
         hp = hpy()
 
+        def spath(a, b):
+            for i in range(len(a)):
+                try:
+                    if a[i] == b[i]: yield a[i]
+                    else: break
+                except IndexError:
+                    break
+
         record = Record([])
 
         for name in self.config.get_modules():
@@ -172,9 +180,8 @@ class Recorder(object):
                 continue
             module = sys.modules[name]
             module_dict = module.__dict__
-            obj_keys = sorted(set(module_dict.keys())-
-                              set(self.config.IGNORE_NAMES))
-            for key in obj_keys:
+            keys = sorted(set(module_dict.keys())-set(self.config.IGNORE_NAMES))
+            for key in keys:
                 obj = module_dict[key]
                 obj_type = obj.__class__.__name__
 
@@ -185,20 +192,22 @@ class Recorder(object):
 
                 try:
                     _, lineno = inspect.getsourcelines(obj)
-                    file_path = inspect.getsourcefile(obj)
+                    fn = inspect.getsourcefile(obj)
                 except TypeError:
                     lines, lineno = inspect.getsourcelines(module)
                     for line in lines:
                         lineno += 1
                         if line.startswith(key):
                             break
-                    file_path = inspect.getsourcefile(module)
+                    fn = inspect.getsourcefile(module)
+
+                filename = fn[len(list(spath(fn, os.getcwd())))+1:]
 
                 entry = RecordEntry(name,
                                     key,
                                     obj.__class__.__name__,
                                     iso.domisize,
-                                    file_path,
+                                    filename,
                                     lineno)
 
                 record.entries.append(entry)
