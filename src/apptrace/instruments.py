@@ -166,10 +166,12 @@ class Recorder(object):
         hp = hpy()
 
         def spath(a, b):
-            for i in range(len(a)):
+            i = 0
+            while 1:
                 try:
                     if a[i] == b[i]: yield a[i]
                     else: break
+                    i += 1
                 except IndexError:
                     break
 
@@ -234,7 +236,7 @@ class Recorder(object):
 
         if curr_index < limit: limit = curr_index 
 
-        keys = ['%i' % (curr_index-i) for i in xrange(offset, limit)]
+        keys = [str(curr_index-i) for i in xrange(offset, limit)]
 
         records = memcache.get_multi(keys=keys,
                                      key_prefix=self.config.RECORD_PREFIX)

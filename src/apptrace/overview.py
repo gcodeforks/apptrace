@@ -35,20 +35,20 @@ class StaticHandler(webapp.RequestHandler):
         filename = path[path.rfind('/')+1:]
         filename = os.path.join(os.path.dirname(__file__), 'static', filename)
         content_type, encoding = mimetypes.guess_type(filename)
-        assert content_type and '/' in content_type, repr(content_type)
-        expiration = email.Utils.formatdate(time.time()+3600, usegmt=True)
         try:
+            assert content_type and '/' in content_type, repr(content_type)
             fp = open(filename, 'rb')
-        except IOError:
+        except (IOError, AssertionError):
             self.response.set_status(404)
             return
+        expiration = email.Utils.formatdate(time.time()+3600, usegmt=True)
+        self.response.headers['Content-type'] = content_type
+        self.response.headers['Cache-Control'] = 'public, max-age=expiry'
+        self.response.headers['Expires'] = expiration
         try:
             self.response.out.write(fp.read())
         finally:
             fp.close()
-        self.response.headers['Content-type'] = content_type
-        self.response.headers['Cache-Control'] = 'public, max-age=expiry'
-        self.response.headers['Expires'] = expiration
 
 
 class OverviewHandler(webapp.RequestHandler):
