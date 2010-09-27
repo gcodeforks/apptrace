@@ -17,11 +17,13 @@
 
 from apptrace.middleware import config
 from apptrace.instruments import Recorder
+from django.utils import simplejson
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 
 import email
+import logging
 import mimetypes
 import os
 import time
@@ -32,7 +34,7 @@ class StaticHandler(webapp.RequestHandler):
 
     def get(self):
         path = self.request.path
-        filename = path[path.rfind('/')+1:]
+        filename = path[path.rfind('static/')+7:]
         filename = os.path.join(os.path.dirname(__file__), 'static', filename)
         content_type, encoding = mimetypes.guess_type(filename)
         try:
@@ -51,12 +53,33 @@ class StaticHandler(webapp.RequestHandler):
             fp.close()
 
 
+class AJAXRecordsHandler(webapp.RequestHandler):
+    """Serves JSON representation of records suitable for 'flot' charts."""
+
+    def get(self):
+        records = Recorder(config).get_records()
+
+        series = {}
+        for index, record in enumerate(reversed(records)):
+            for entry in record.entries:
+                label = "%s (%s)" % (entry.name, entry.filename)
+                defaults = {'label': label, 'data': []}
+                s = series.setdefault(entry.name, defaults)
+                s['data'].append((index+1, entry.dominated_size))
+
+        series = [series[key] for key in series]
+        series = sorted(series, lambda a,b:cmp(a['label'],b['label']))
+
+        self.response.headers['Content-Type'] = 'application/octet-stream'
+        self.response.out.write(simplejson.dumps(series))
+
+
 class OverviewHandler(webapp.RequestHandler):
     """Serves the overview page."""
 
     def get(self):
-        records = Recorder(config).get_raw_records()
-        template_vars = {'records': records}
+        template_vars = {'app_id': os.environ['APPLICATION_ID'],
+                         'records_url': '/_ah/apptrace/records'}
         self.response.out.write(template.render('index.html', template_vars))
 
 
@@ -65,6 +88,7 @@ def main():
 
     app = webapp.WSGIApplication([
         ('.*/static/.*', StaticHandler),
+        ('.*/records', AJAXRecordsHandler),
         ('.*', OverviewHandler),
     ], debug=True)
 

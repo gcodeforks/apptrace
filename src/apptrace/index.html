@@ -3,16 +3,54 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Apptrace</title>
+    <title>Apptrace - {{ app_id }}</title>
+    <script type="text/javascript" src="/_ah/apptrace/static/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="/_ah/apptrace/static/flot/jquery.flot.min.js"></script>
+    <!--[if IE]><script language="javascript" type="text/javascript" src="/_ah/apptrace/static/flot/excanvas.pack.js"></script><![endif]-->
     <link rel="stylesheet" href="/_ah/apptrace/static/apptrace.css"
       type="text/css" media="all" />
   </head>
   <body>
-    <h1>Apptrace</h1>
-    <ul>
-    {% for record in records %}
-      <li>{{ record }}</li>
-    {% endfor %}
-    </ul> 
+    <h1>Apptrace - {{ app_id }}</h1>
+    <div id="chart" style="width:800px;height:200px"></div>
+    <div id="legend"></div>
+
+    <script type="text/javascript">
+      $(function () {
+        var options = {
+          lines: { show: true },
+          points: { show: true },
+          xaxis: { tickDecimals: 0, tickSize: 1 },
+          legend: { container: $('#legend'), noColumns: 2 }
+        };
+
+        var chart = $("#chart");
+        var cached_data = [];
+        var fetched_ids = {};
+
+        $.plot(chart, cached_data, options);
+ 
+        var button = $(this);
+        var url = '{{ records_url }}';
+
+        function updateData(data) {
+          records = JSON.parse(data);
+          for (i=0; i<records.length; i++) {
+            var series = records[i];
+            if (!fetched_ids[series.label]) {
+              fetched_ids[series.label] = true;
+              cached_data.push(series);
+            }
+          }
+          $.plot(chart, cached_data, options);
+        }
+
+        $.ajax({
+          url: url,
+          method: 'GET',
+          success: updateData
+        });
+      });
+    </script>
   </body>
 </html>
