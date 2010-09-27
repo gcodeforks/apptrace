@@ -2,8 +2,8 @@
 Apptrace for Google App Engine
 ==============================
 
-The apptrace package provides a WSGI middleware for tracking down memory leaks
-in Google App Engine Python applications.
+The apptrace package provides a WSGI middleware for tracking memory usage in
+Google App Engine Python applications.
 
 Since apptrace is meant for development and debugging purposes only, it works
 with the development appserver of the Google App Engine Python SDK and
@@ -27,6 +27,38 @@ Requirements
 The apptrace package requires Guppy-PE (http://guppy-pe.sourceforge.net) to be
 installed on your PYTHONPATH. It will be automatically installed when you use
 the `easy_install` command.
+
+Installation
+------------
+
+The easies way to install apptrace is (provided that you have setuptools
+installed) to use `easy_install apptrace`.
+
+Running Apptrace
+----------------
+
+In order to run the demo application with apptrace run following commands::
+
+  $ apptracectl init demo 
+  $ python dev_appserver.py demo
+
+Buildout
+--------
+
+If you want to tinker with the most recent development version of apptrace,
+install the development environment by typing following commands::
+
+  $ hg clone https://apptrace.googlecode.com/hg apptrace-dev
+  $ cd apptrace-dev
+  $ python bootstrap.py --distribute
+  $ ./bin/buildout
+
+Running Unit Tests
+------------------
+
+All unit tests can be run by executing the following command::
+
+  $ ./bin/python setup.py test --appengine-path=<path to the SDK>
 
 Contact
 -------

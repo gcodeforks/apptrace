@@ -13,4 +13,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Package for tracking down memory leaks in GAE application."""
+"""Package for tracking memory usage in GAE application."""

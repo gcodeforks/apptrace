@@ -1,4 +1,3 @@
 include CHANGES.rst
-include INSTALL.rst
 include README.rst
 include src/apptrace/*.html
