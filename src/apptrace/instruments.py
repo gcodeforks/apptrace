@@ -208,7 +208,7 @@ class Recorder(object):
                 try:
                     _, lineno = inspect.getsourcelines(obj)
                     fn = inspect.getsourcefile(obj)
-                except TypeError:
+                except (TypeError, IOError):
                     lines, lineno = inspect.getsourcelines(module)
                     for line in lines:
                         lineno += 1
