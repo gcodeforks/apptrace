@@ -5,3 +5,8 @@ body {
   font-size: 75%;
   margin: 0 0 0 20px;
 }
+
+div#chart {
+  height: 200px;
+  width: 800px;
+}

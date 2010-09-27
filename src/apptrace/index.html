@@ -12,7 +12,7 @@
   </head>
   <body>
     <h1>Apptrace - {{ app_id }}</h1>
-    <div id="chart" style="width:800px;height:200px"></div>
+    <div id="chart"></div>
     <div id="legend"></div>
     <div id="actions">
       <input id="refresh" type="button" value="Refresh" />
@@ -32,12 +32,15 @@
         var series = {};
         var chart_data = [];
 
-        $.plot(chart, chart_data, options);
-
         function updateData(data) {
           var records = JSON.parse(data);
           series = {};
           chart_data = [];
+
+          if (records.length == 0) {
+            chart.html("No data!");
+            return null;
+          }
 
           for (i=0; i<records.length; i++) {
             var record = records[i];
