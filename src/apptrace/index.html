@@ -12,7 +12,10 @@
   </head>
   <body>
     <h1>Apptrace - {{ app_id }}</h1>
-    <div id="chart"></div>
+    <h2>Memory usage (cumulated)</h2>
+    <div id="memory"></div>
+    <h2>Details</h2>
+    <div id="details"></div>
     <div id="legend"></div>
     <div id="actions">
       <input id="refresh" type="button" value="Refresh" />
@@ -28,33 +31,59 @@
           legend: { container: $('#legend'), noColumns: 10 }
         };
 
-        var chart = $("#chart");
-        var series = {};
-        var chart_data = [];
+        var memory = $("#memory");
+        var memory_series = {};
+        var memory_data = [];
+
+        var details = $("#details");
+        var details_series = {};
+        var details_data = [];
 
         function updateData(data) {
           var records = JSON.parse(data);
-          series = {};
-          chart_data = [];
 
-          if (records.length == 0) {
-            chart.html("No data!");
+          memory_series = {};
+          memory_data = [];
+
+          details_series = {};
+          details_data = [];
+
+          if (records.length == 0)
             return null;
-          }
 
           for (i=0; i<records.length; i++) {
             var record = records[i];
+            var cumulated_size = 0;
+
             for (j=0; j<record.entries.length; j++) {
               var entry = record.entries[j];
-              if (!series[entry.name])
-                series[entry.name] = {label: entry.name, data: []};
-              series[entry.name].data.push([record.index,
-                                            entry.dominated_size]);
+
+              if (!details_series[entry.name]) {
+                details_series[entry.name] = {label: entry.name, data: []};
+              }
+
+              details_series[entry.name].data.push([record.index,
+                                                    entry.dominated_size]);
+
+              cumulated_size += entry.dominated_size;
             }
+
+            if (!memory_series['cumulated']) {
+              memory_series['cumulated'] = {label: 'cumulated', data: [],
+                                            lines: {fill: true}};
+            }
+
+            memory_series['cumulated'].data.push([record.index,
+                                                  cumulated_size]);
           }
-          for (var key in series)
-            chart_data.push(series[key]);
-          $.plot(chart, chart_data, options);
+          for (var key in memory_series)
+            memory_data.push(memory_series[key]);
+
+          for (var key in details_series)
+            details_data.push(details_series[key]);
+
+          $.plot(memory, memory_data, options);
+          $.plot(details, details_data, options);
         }
 
         $('#refresh').click(function() {

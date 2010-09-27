@@ -6,7 +6,12 @@ body {
   margin: 0 0 0 20px;
 }
 
-div#chart {
+div#memory {
+  height: 200px;
+  width: 800px;
+}
+
+div#details {
   height: 200px;
   width: 800px;
 }
