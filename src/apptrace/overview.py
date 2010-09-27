@@ -23,7 +23,6 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 
 import email
-import logging
 import mimetypes
 import os
 import time
@@ -54,24 +53,15 @@ class StaticHandler(webapp.RequestHandler):
 
 
 class AJAXRecordsHandler(webapp.RequestHandler):
-    """Serves JSON representation of records suitable for 'flot' charts."""
+    """Serves JSON records."""
 
     def get(self):
-        records = Recorder(config).get_records()
-
-        series = {}
-        for index, record in enumerate(reversed(records)):
-            for entry in record.entries:
-                label = "%s (%s)" % (entry.name, entry.filename)
-                defaults = {'label': label, 'data': []}
-                s = series.setdefault(entry.name, defaults)
-                s['data'].append((index+1, entry.dominated_size))
-
-        series = [series[key] for key in series]
-        series = sorted(series, lambda a,b:cmp(a['label'],b['label']))
+        limit = int(self.request.GET.get('limit', 100))
+        offset = int(self.request.GET.get('offset', 0))
+        records = Recorder(config).get_raw_records(limit=limit, offset=offset)
 
         self.response.headers['Content-Type'] = 'application/octet-stream'
-        self.response.out.write(simplejson.dumps(series))
+        self.response.out.write(records)
 
 
 class OverviewHandler(webapp.RequestHandler):
@@ -88,7 +78,7 @@ def main():
 
     app = webapp.WSGIApplication([
         ('.*/static/.*', StaticHandler),
-        ('.*/records', AJAXRecordsHandler),
+        ('.*/records.*', AJAXRecordsHandler),
         ('.*', OverviewHandler),
     ], debug=True)
 

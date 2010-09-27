@@ -66,16 +66,18 @@ class TestIntruments(unittest.TestCase):
 
         json = ('{"module_name": "test", "name": "l", "obj_type": "list",'
                 '"dominated_size": 3112, "filename": "test.py", "lineno": 42}')
-        record = instruments.Record([instruments.RecordEntry.FromJSON(json)])
+        record = instruments.Record(1, [instruments.RecordEntry.FromJSON(json)])
         self.assertEqual(
             {u'entries': [{u'obj_type': u'list', u'name': u'l',
                            u'dominated_size': 3112, u'lineno': 42,
-                           u'module_name': u'test', u'filename': u'test.py'}]},
+                           u'module_name': u'test', u'filename': u'test.py'}],
+             u'index': 1},
             simplejson.loads(record.EncodeJSON()))
 
         json = ('{"entries": [{"module_name": "test", "obj_type": "list", '
                               '"dominated_size": 3112, "name": "l", '
-                              '"filename": "test.py", "lineno": 42}]}')
+                              '"filename": "test.py", "lineno": 42}],'
+                ' "index": 1}')
         new_record = instruments.Record.FromJSON(json)
         self.assertTrue(
             isinstance(new_record.entries[0], instruments.RecordEntry))
@@ -107,6 +109,7 @@ class TestIntruments(unittest.TestCase):
         """Testing the recorder."""
 
         from apptrace import instruments
+        from django.utils import simplejson
 
         class Config(object):
             INDEX_KEY     = 'apptrace_test_index'
@@ -122,5 +125,5 @@ class TestIntruments(unittest.TestCase):
         recorder.trace()
 
         # Retrieve records
-        self.assertEqual(2, len(recorder.get_raw_records()))
+        self.assertEqual(2, len(simplejson.loads(recorder.get_raw_records())))
         self.assertEqual(2, len(recorder.get_records()))

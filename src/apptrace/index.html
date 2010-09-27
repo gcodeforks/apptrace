@@ -14,6 +14,10 @@
     <h1>Apptrace - {{ app_id }}</h1>
     <div id="chart" style="width:800px;height:200px"></div>
     <div id="legend"></div>
+    <div id="actions">
+      <input id="refresh" type="button" value="Refresh" />
+      <a href="{{ records_url }}">Download raw data</a>
+    </div>
 
     <script type="text/javascript">
       $(function () {
@@ -21,35 +25,46 @@
           lines: { show: true },
           points: { show: true },
           xaxis: { tickDecimals: 0, tickSize: 1 },
-          legend: { container: $('#legend'), noColumns: 2 }
+          legend: { container: $('#legend'), noColumns: 10 }
         };
 
         var chart = $("#chart");
-        var cached_data = [];
-        var fetched_ids = {};
+        var series = {};
+        var chart_data = [];
 
-        $.plot(chart, cached_data, options);
- 
-        var button = $(this);
-        var url = '{{ records_url }}';
+        $.plot(chart, chart_data, options);
 
         function updateData(data) {
-          records = JSON.parse(data);
+          var records = JSON.parse(data);
+          series = {};
+          chart_data = [];
+
           for (i=0; i<records.length; i++) {
-            var series = records[i];
-            if (!fetched_ids[series.label]) {
-              fetched_ids[series.label] = true;
-              cached_data.push(series);
+            var record = records[i];
+            for (j=0; j<record.entries.length; j++) {
+              var entry = record.entries[j];
+              if (!series[entry.name])
+                series[entry.name] = {label: entry.name, data: []};
+              series[entry.name].data.push([record.index,
+                                            entry.dominated_size]);
             }
           }
-          $.plot(chart, cached_data, options);
+          for (var key in series)
+            chart_data.push(series[key]);
+          $.plot(chart, chart_data, options);
         }
 
-        $.ajax({
-          url: url,
-          method: 'GET',
-          success: updateData
+        $('#refresh').click(function() {
+          var button = $(this);
+          var url = button.siblings('a').attr('href');
+          $.ajax({
+            url: url,
+            method: 'GET',
+            success: updateData
+          });
         });
+
+        $('#refresh').click();
       });
     </script>
   </body>

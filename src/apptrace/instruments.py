@@ -125,12 +125,14 @@ class Record(JSONSerializable):
     Records contain record entries.
     """
 
-    def __init__(self, entries):
+    def __init__(self, index, entries):
         """Constructor.
 
         Args:
+            index: Integer.
             entries: List of RecordEntry instances.
         """
+        self.index = index
         self.entries = entries
 
     @classmethod
@@ -180,7 +182,13 @@ class Recorder(object):
         gc.collect()
         hp = hpy()
 
-        record = Record([])
+        # We use memcache to store records and take a straightforward
+        # approach with a very simple index which is basically a counter.
+        index = 1
+        if not memcache.add(key=self.config.INDEX_KEY, value=index):
+            index = memcache.incr(key=self.config.INDEX_KEY)
+
+        record = Record(index, [])
 
         for name in self.config.get_modules():
             if name not in sys.modules:
@@ -219,34 +227,36 @@ class Recorder(object):
 
                 record.entries.append(entry)
 
-        # We use memcache to store records and take a straightforward
-        # approach with a very simple index which is basically a counter.
-        index = 1
-        if not memcache.add(key=self.config.INDEX_KEY, value=index):
-            index = memcache.incr(key=self.config.INDEX_KEY)
         key = self.config.RECORD_PREFIX + str(index)
         memcache.add(key=key, value=record.EncodeJSON())
 
-    def get_raw_records(self, limit=100, offset=0):
+    def get_raw_records(self, limit=100, offset=0, join=True):
         """Returns raw records beginning with the latest.
 
         Args:
             limit: Max number of records.
             offset: Offset within overall results.
+            join: If True return all records in one JSON string. Otherwise,
+                return a list of JSON reocords.
         """
 
         curr_index = memcache.get(self.config.INDEX_KEY)
         if not curr_index:
-            return []
+            return '[]'
 
-        if curr_index < limit: limit = curr_index 
+        if offset+1 > curr_index: offset = curr_index-1
+        if limit > curr_index: limit = curr_index-offset 
 
-        keys = [str(curr_index-i) for i in xrange(offset, limit)]
+        keys = [str(i+1) for i in xrange(offset, offset+limit)]
 
-        records = memcache.get_multi(keys=keys,
-                                     key_prefix=self.config.RECORD_PREFIX)
+        result = memcache.get_multi(keys=keys,
+                                    key_prefix=self.config.RECORD_PREFIX)
 
-        return [records[key] for key in keys]
+        records = [result[key] for key in keys]
+
+        if join:
+            return '['+', '.join(records)+']'
+        return records
 
     def get_records(self, limit=100, offset=0):
         """Get stored records.
@@ -257,5 +267,5 @@ class Recorder(object):
 
         Returns lists of Record instances.
         """
-        records = self.get_raw_records(limit, offset)
+        records = self.get_raw_records(limit=limit, offset=offset, join=False)
         return [Record.FromJSON(record) for record in records]
