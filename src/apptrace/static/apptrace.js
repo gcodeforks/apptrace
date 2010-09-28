@@ -5,28 +5,21 @@
  */
 $(function () {
   var options = {
-    lines: { show: true },
-    points: { show: true },
-    xaxis: { tickDecimals: 0, tickSize: 1 },
-    legend: { container: $('#legend'), noColumns: 10 }
+    lines: {show: true},
+    points: {show: true},
+    xaxis: {tickDecimals: 0, tickSize: 1},
+    legend: {container: $('#legend'), noColumns: 10}
   };
-
-  var memory = $("#memory");
-  var memory_series = {};
-  var memory_data = [];
-
-  var details = $("#details");
-  var details_series = {};
-  var details_data = [];
 
   function updateData(data) {
     var records = JSON.parse(data);
 
-    memory_series = {};
-    memory_data = [];
+    var memory_series = {};
+    var memory_data = [];
 
-    details_series = {};
-    details_data = [];
+    var details_series = {};
+    var details_keys = [];
+    var details_data = [];
 
     if (records.length == 0)
       return null;
@@ -40,6 +33,7 @@ $(function () {
 
         if (!details_series[entry.name]) {
           details_series[entry.name] = {label: entry.name, data: []};
+          details_keys.push(entry.name);
         }
 
         details_series[entry.name].data.push([record.index,
@@ -59,11 +53,12 @@ $(function () {
     for (var key in memory_series)
       memory_data.push(memory_series[key]);
 
-    for (var key in details_series)
-      details_data.push(details_series[key]);
+    var sorted_keys = details_keys.sort();
+    for (k=0; k<sorted_keys.length; k++)
+      details_data.push(details_series[sorted_keys[k]]);
 
-    $.plot(memory, memory_data, options);
-    $.plot(details, details_data, options);
+    $.plot($('#memory'), memory_data, options);
+    $.plot($('#details'), details_data, options);
   }
 
   $('#refresh').click(function() {
