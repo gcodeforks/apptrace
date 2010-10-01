@@ -31,7 +31,7 @@ the `easy_install` command.
 Installation
 ------------
 
-The easies way to install apptrace is (provided that you have setuptools
+The easiest way to install apptrace is (provided that you have setuptools
 installed) to use `easy_install apptrace`.
 
 Running Apptrace
