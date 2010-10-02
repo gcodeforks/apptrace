@@ -185,8 +185,11 @@ class Recorder(object):
         # We use memcache to store records and take a straightforward
         # approach with a very simple index which is basically a counter.
         index = 1
-        if not memcache.add(key=self.config.INDEX_KEY, value=index):
-            index = memcache.incr(key=self.config.INDEX_KEY)
+        if not memcache.add(key=self.config.INDEX_KEY,
+                            namespace=self.config.NAMESPACE,
+                            value=index):
+            index = memcache.incr(key=self.config.INDEX_KEY,
+                                  namespace=self.config.NAMESPACE)
 
         record = Record(index, [])
 
@@ -227,8 +230,11 @@ class Recorder(object):
 
                 record.entries.append(entry)
 
+        # Store JSON records
         key = self.config.RECORD_PREFIX + str(index)
-        memcache.add(key=key, value=record.EncodeJSON())
+        memcache.add(key=key,
+                     namespace=self.config.NAMESPACE,
+                     value=record.EncodeJSON())
 
     def get_raw_records(self, limit=100, offset=0, join=True):
         """Returns raw records beginning with the latest.
@@ -240,7 +246,8 @@ class Recorder(object):
                 return a list of JSON reocords.
         """
 
-        curr_index = memcache.get(self.config.INDEX_KEY)
+        curr_index = memcache.get(self.config.INDEX_KEY,
+                                  namespace=self.config.NAMESPACE)
         if not curr_index:
             return '[]'
 
@@ -250,6 +257,7 @@ class Recorder(object):
         keys = [str(i+1) for i in xrange(offset, offset+limit)]
 
         result = memcache.get_multi(keys=keys,
+                                    namespace=self.config.NAMESPACE,
                                     key_prefix=self.config.RECORD_PREFIX)
 
         records = [result[key] for key in keys]

@@ -38,6 +38,7 @@ class Config(object):
     URL_PATTERNS  = []
     TRACE_MODULES = []
 
+    NAMESPACE     = '__apptrace__'
     INDEX_KEY     = 'apptrace_index'
     RECORD_PREFIX = 'apptrace_record'
 

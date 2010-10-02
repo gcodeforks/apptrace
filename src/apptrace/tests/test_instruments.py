@@ -112,6 +112,7 @@ class TestIntruments(unittest.TestCase):
         from django.utils import simplejson
 
         class Config(object):
+            NAMESPACE     = '__apptrace_test__'
             INDEX_KEY     = 'apptrace_test_index'
             RECORD_PREFIX = 'apptrace_test_record'
             IGNORE_NAMES  = []
