@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-Version 0.1.1 (2010-??-??)
+Version 0.1.1 (2010-10-02)
 --------------------------
 
   - Uses a separate memcache namespace for storing records.
