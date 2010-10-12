@@ -42,7 +42,7 @@ In order to run the demo application with apptrace run following commands::
   $ apptracectl init demo 
   $ python dev_appserver.py demo
 
-See this wiki page for a more detailed documentation on using apptrace::
+See this wiki page for a more detailed documentation on using apptrace:
 
   http://code.google.com/p/apptrace/wiki/UsingApptrace
 
