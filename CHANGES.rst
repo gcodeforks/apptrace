@@ -1,7 +1,7 @@
 CHANGES
 =======
 
-Version 0.2.0 (2010-??-??)
+Version 0.2.0 (2010-10-12)
 --------------------------
 
   - Adds simple code browser.
