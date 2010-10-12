@@ -66,7 +66,7 @@ def read(*rnames):
 
 setup(
     name='apptrace',
-    version='0.1.1',
+    version='0.2.0',
     author="Tobias Rodaebel",
     author_email="tobias.rodaebel@googlemail.com",
     description=("WSGI middleware to measure the memory footprint of GAE "
