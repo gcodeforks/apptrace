@@ -64,6 +64,29 @@ class AJAXRecordsHandler(webapp.RequestHandler):
         self.response.out.write(records)
 
 
+class BrowserHandler(webapp.RequestHandler):
+    """Provides the code browser."""
+
+    def get(self):
+        filename = self.request.GET.get('filename')
+        lineno = int(self.request.GET.get('lineno', 0))
+        error = None
+        code_lines = []
+        try:
+          fp = open(os.path.join('..', filename), 'r')
+          code_lines = fp.readlines()
+          fp.close()
+        except IOError, e:
+          error = u"File not found!"
+          self.response.set_status(404)
+        template_vars = {'app_id': os.environ['APPLICATION_ID'],
+                         'filename': filename,
+                         'lineno': lineno,
+                         'error': error,
+                         'code_lines': code_lines}
+        self.response.out.write(template.render('code.html', template_vars))
+
+
 class OverviewHandler(webapp.RequestHandler):
     """Serves the overview page."""
 
@@ -79,6 +102,7 @@ def main():
     app = webapp.WSGIApplication([
         ('.*/static/.*', StaticHandler),
         ('.*/records.*', AJAXRecordsHandler),
+        ('.*/browse.*', BrowserHandler),
         ('.*', OverviewHandler),
     ], debug=True)
 

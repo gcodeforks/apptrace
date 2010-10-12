@@ -15,3 +15,27 @@ div#details {
   height: 200px;
   width: 800px;
 }
+
+a {
+  text-decoration: none;
+}
+
+div.error {
+  color: red;
+}
+
+pre {
+  font-size: 1.2em;
+}
+
+pre div {
+  width: 98%;
+}
+
+pre div.even {
+  background-color: #f5f5f5;
+}
+
+pre div.mark {
+  background-color: yellow;
+}

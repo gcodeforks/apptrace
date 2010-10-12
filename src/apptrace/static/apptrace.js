@@ -32,7 +32,11 @@ $(function () {
         var entry = record.entries[j];
 
         if (!details_series[entry.name]) {
-          details_series[entry.name] = {label: entry.name, data: []};
+          var label = '<a href="/_ah/apptrace/browse'
+                    + '?filename=' + entry.filename
+                    + '&lineno=' + entry.lineno
+                    + '">' + entry.name + '</a>';
+          details_series[entry.name] = {label: label, data: []};
           details_keys.push(entry.name);
         }
 
