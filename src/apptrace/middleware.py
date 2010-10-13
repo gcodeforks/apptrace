@@ -49,7 +49,14 @@ class Config(object):
     def get_modules():
         """Returns plain module names without the file extension."""
 
-        return [module.strip('.py') for module in config.TRACE_MODULES]
+        def _strip(mod):
+            if mod.endswith('.py'):
+                mod = mod[:-3]
+            if os.sep in mod:
+                mod = mod.replace(os.sep, '.')
+            return mod
+
+        return [_strip(module) for module in config.TRACE_MODULES]
 
 
 config = lib_config.register('apptrace', Config.__dict__)

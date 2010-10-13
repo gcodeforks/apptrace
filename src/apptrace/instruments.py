@@ -25,6 +25,7 @@ from guppy import hpy
 
 import gc
 import inspect
+import logging
 
 
 def lsubstr(a, b):
@@ -195,6 +196,7 @@ class Recorder(object):
 
         for name in self.config.get_modules():
             if name not in sys.modules:
+                logging.warn('Unknown module "%s"', name)
                 continue
             module = sys.modules[name]
             module_dict = module.__dict__
