@@ -23,9 +23,13 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util
 
 import email
+import google.appengine
 import mimetypes
 import os
 import time
+
+
+GAE_DIR = os.path.abspath(os.path.dirname(google.appengine.__file__))[:-17]
 
 
 class StaticHandler(webapp.RequestHandler):
@@ -69,6 +73,8 @@ class BrowserHandler(webapp.RequestHandler):
 
     def get(self):
         filename = self.request.GET.get('filename')
+        if filename.startswith('google_appengine'):
+            filename = os.path.join(GAE_DIR, filename[17:])
         lineno = int(self.request.GET.get('lineno', 0))
         error = None
         code_lines = []

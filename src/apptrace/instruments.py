@@ -16,6 +16,7 @@
 """Instruments for measuring the memory footprint of a GAE application."""
 
 import os
+import re
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -221,7 +222,8 @@ class Recorder(object):
                             break
                     fn = inspect.getsourcefile(module)
 
-                filename = fn[len(list(lsubstr(fn, os.getcwd())))+1:]
+                filename = fn[len(list(lsubstr(fn, os.getcwd()))):]
+                filename = re.sub('^/', '', filename)
 
                 entry = RecordEntry(name,
                                     key,
