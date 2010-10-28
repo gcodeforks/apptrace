@@ -29,21 +29,6 @@ import inspect
 import logging
 
 
-def lsubstr(a, b):
-    """Calculates the common substring by comparing two given strings.
-
-    Returns a generator object.
-    """
-    i = 0
-    while 1:
-        try:
-            if a[i] == b[i]: yield a[i]
-            else: break
-            i += 1
-        except IndexError:
-            break
-
-
 class JSONSerializable(object):
     """Base class for JSON serializable objects."""
 
@@ -222,14 +207,14 @@ class Recorder(object):
                             break
                     fn = inspect.getsourcefile(module)
 
-                filename = fn[len(list(lsubstr(fn, os.getcwd()))):]
-                filename = re.sub('^/', '', filename)
+                fname = fn[len(list(os.path.commonprefix([fn, os.getcwd()]))):]
+                fname = re.sub('^/', '', fname)
 
                 entry = RecordEntry(name,
                                     key,
                                     obj.__class__.__name__,
                                     iso.domisize,
-                                    filename,
+                                    fname,
                                     lineno)
 
                 record.entries.append(entry)
