@@ -1,6 +1,14 @@
 CHANGES
 =======
 
+Version 0.2.2 (2011-01-08)
+--------------------------
+
+  - Fixes an issue where apptrace crashed when tracing old style class objects.
+
+    - http://code.google.com/p/apptrace/issues/detail?id=5
+
+
 Version 0.2.1 (2010-10-13)
 --------------------------
 
