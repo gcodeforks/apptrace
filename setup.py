@@ -1,4 +1,4 @@
-# Copyright 2010 Tobias Rodaebel
+# Copyright 2010, 2011 Tobias Rodaebel
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ def read(*rnames):
 
 setup(
     name='apptrace',
-    version='0.2.1',
+    version='0.2.2',
     author="Tobias Rodaebel",
     author_email="tobias.rodaebel@googlemail.com",
     description=("WSGI middleware to measure the memory footprint of GAE "
