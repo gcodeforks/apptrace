@@ -189,7 +189,11 @@ class Recorder(object):
             keys = sorted(set(module_dict.keys())-set(self.config.IGNORE_NAMES))
             for key in keys:
                 obj = module_dict[key]
-                obj_type = obj.__class__.__name__
+                if hasattr(obj, '__class__'):
+                    obj_type = obj.__class__.__name__
+                else:
+                    obj_type = str(obj).split('.')[-1]
+                    logging.warn("Old style class '%s' detected", obj_type)
 
                 if obj_type in self.config.IGNORE_TYPES:
                     continue
@@ -210,12 +214,8 @@ class Recorder(object):
                 fname = fn[len(list(os.path.commonprefix([fn, os.getcwd()]))):]
                 fname = re.sub('^/', '', fname)
 
-                entry = RecordEntry(name,
-                                    key,
-                                    obj.__class__.__name__,
-                                    iso.domisize,
-                                    fname,
-                                    lineno)
+                entry = RecordEntry(
+                    name, key, obj_type, iso.domisize, fname, lineno)
 
                 record.entries.append(entry)
 
