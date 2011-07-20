@@ -20,7 +20,11 @@ import re
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
-from django.utils import simplejson
+try:
+    from django.utils import simplejson
+except ImportError:
+    import simplejson
+
 from google.appengine.api import memcache
 from guppy import hpy
 

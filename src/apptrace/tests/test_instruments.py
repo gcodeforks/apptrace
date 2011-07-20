@@ -37,7 +37,10 @@ class TestIntruments(unittest.TestCase):
         """Generating record entries."""
 
         from apptrace import instruments
-        from django.utils import simplejson
+        try:
+            from django.utils import simplejson
+        except ImportError:
+            import simplejson
 
         entry = instruments.RecordEntry('foo', 'bar', 'int', 32, 'foo.py', 22)
         self.assertEqual(

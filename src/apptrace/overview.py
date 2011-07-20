@@ -17,7 +17,10 @@
 
 from apptrace.middleware import config
 from apptrace.instruments import Recorder
-from django.utils import simplejson
+try:
+    from django.utils import simplejson
+except ImportError:
+    import simplejson
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp import util

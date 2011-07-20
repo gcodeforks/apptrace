@@ -42,11 +42,13 @@ class test(Command):
         extra_paths = [
             appengine_path,
             os.path.join(appengine_path, 'lib', 'antlr3'),
-            os.path.join(appengine_path, 'lib', 'django'),
+            os.path.join(appengine_path, 'lib', 'django_0_96'),
             os.path.join(appengine_path, 'lib', 'fancy_urllib'),
             os.path.join(appengine_path, 'lib', 'ipaddr'),
             os.path.join(appengine_path, 'lib', 'webob'),
             os.path.join(appengine_path, 'lib', 'yaml', 'lib'),
+            os.path.join(appengine_path, 'lib', 'lib', 'simplejson'),
+            os.path.join(appengine_path, 'lib', 'lib', 'graphy'),
         ]
         sys.path.extend(extra_paths)
 
