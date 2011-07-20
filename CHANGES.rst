@@ -1,6 +1,14 @@
 CHANGES
 =======
 
+Version 0.2.3 (2011-07-21)
+--------------------------
+
+  - Fixes a compatibility issue when importing simplejson.
+
+    - http://code.google.com/p/apptrace/issues/detail?id=6
+
+
 Version 0.2.2 (2011-01-08)
 --------------------------
 
